@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "55724932885",
+    "firebase_url": "https://air-guard-127e8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "air-guard-127e8",
+    "storage_bucket": "air-guard-127e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55724932885:android:1a5b027bdc54902122f31c",
+        "android_client_info": {
+          "package_name": "com.example.air_guard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp7MY51x2gu2Icr7iwbPXgYJi1VLQKCqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
