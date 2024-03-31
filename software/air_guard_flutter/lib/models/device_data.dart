@@ -24,11 +24,13 @@ class DeviceReading {
           ? (data['temp'] % 1 == 0 ? data['temp'] + 0.1 : data['temp'])
           : 0.0,
       lastSeen: DateTime.fromMillisecondsSinceEpoch(data['ts']),
-      dust: data['dust'] ?? 'nill',
-      humi: data['humi'] ?? 'nill',
-      mq135: data['mq135'] ?? 'nill',
-      mq4: data['mq4'] ?? 'nill',
-      mq7: data['mq7'] ?? 'nill',
+      dust: data['dust'] != null
+          ? (data['dust'] % 1 == 0 ? data['dust'] + 0.1 : data['dust'])
+          : 0.0,
+      humi: data['humi'] ?? 0,
+      mq135: data['mq135'] ?? 0,
+      mq4: data['mq4'] ?? 0,
+      mq7: data['mq7'] ?? 0,
     );
   }
 }

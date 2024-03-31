@@ -41,5 +41,6 @@ import 'package:air_guard/services/user_auth_service.dart';
     StackedDialog(classType: InfoAlertDialog),
     // @stacked-dialog
   ],
+  logger: StackedLogger(),
 )
 class App {}
