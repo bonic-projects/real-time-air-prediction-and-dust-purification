@@ -1,9 +1,7 @@
-//Firebase=================================================
-//WiFi
-//Firebase
 #include <Arduino.h>
 #include <WiFi.h>
 #include <FirebaseESP32.h>
+#include <HardwareSerial.h>
 // Provide the token generation process info.
 #include <addons/TokenHelper.h>
 // Provide the RTDB payload printing info and other helper functions.
@@ -30,19 +28,51 @@ String uid;
 String path;
 
 //===============================
-#include "DHT.h"
-#define DHT11PIN 33
-DHT dht(DHT11PIN, DHT11);
 
-float humi;
-float temp;
+//DHT11
+#include <dht11.h>
+#define DHT11PIN 33
+
+float humi=0;
+float temp=0;
+
+dht11 DHT11;
+
+
+//Relay pin
+
+#define relay 26
+
+//Gas Sensors
+#define mq7pin  36 //MQ-7
+// #define mq4pin 39  Get this data using another esp32
+#define mq135pin 34  //MQ-135
+
+int mq7 =0;
+int mq4 =0;
+int mq135 = 0;
+
+//Dust Sensor
+int measurePin = 35;
+int ledPower = 14;
+
+unsigned int samplingTime = 280;
+unsigned int deltaTime = 40;
+unsigned int sleepTime = 9680;
+
+float voMeasured = 0;
+float calcVoltage = 0;
+float dustDensity = 0;
   
 void setup()
 {
   
   Serial.begin(115200);
-/* Start the DHT11 Sensor */
-  dht.begin();
+
+
+  //Dust SensorLed
+  pinMode(ledPower,OUTPUT);
+
 
   ///=============
   //WIFI
@@ -109,12 +139,10 @@ void updateData(){
     FirebaseJson json;
     json.set("temp", temp);
     json.set("humi", humi);
-    // json.set("speed", speed_kmph);
-    // json.set("temp", temp);
-    // json.set("sos", isSos);
-    // json.set("acl_x", acl_x);
-    // json.set("acl_y", acl_y);
-    // json.set("acl_z", acl_z);
+    json.set("mq7", mq7);
+    json.set("mq4", mq4);
+    json.set("mq135",mq135);
+    json.set("dust", dustDensity);
     // json.set("gyro_x", gyro_x);
     // json.set("gyro_y", gyro_y);
     // json.set("gyro_z", gyro_z);
@@ -128,17 +156,81 @@ void updateData(){
 void loop()
 {
   readDht();
+  readGas();
+  readDust();
   updateData();
 }
 
 
 void readDht(){
-  humi = dht.readHumidity();
-  temp = dht.readTemperature();
-  Serial.print("Temperature: ");
-  Serial.print(temp);
-  Serial.print("ºC ");
-  Serial.print("Humidity: ");
+  Serial.println();
+
+  int chk = DHT11.read(DHT11PIN);
+
+  humi = (float)DHT11.humidity;
+  temp = (float)DHT11.temperature;
+
+  Serial.print("Humidity (%): ");
   Serial.println(humi);
+
+  Serial.print("Temperature  (C): ");
+  Serial.println(temp);
+
+  delay(1000);
+}
+
+void readGas(){
+     mq135 = analogRead(mq135pin);
+   mq7 = analogRead(mq7pin);
+if (Serial.available() > 0) {
+    String value = Serial.readString(); 
+    mq4 = value.toInt();
+    Serial.print(mq4);
+    Serial.flush();
+  }
+  
+  Serial.print("mq7");
+  Serial.print(": ");
+  Serial.println(mq7);
+  
+  Serial.print("mq4");
+  Serial.print(": ");
+  Serial.println(mq4);
+  
+  Serial.print("mq135");
+
+  Serial.print(": ");
+  Serial.println(mq135);
+  
+  delay(1000);
+}
+
+void readDust(){
+  digitalWrite(ledPower,LOW);
+  delayMicroseconds(samplingTime);
+
+  voMeasured = analogRead(measurePin);
+
+  delayMicroseconds(deltaTime);
+  digitalWrite(ledPower,HIGH);
+  delayMicroseconds(sleepTime);
+
+  calcVoltage = voMeasured*(5.0/1024);
+  dustDensity = 0.17*calcVoltage-0.1;
+
+  if ( dustDensity < 0)
+  {
+    dustDensity = 0.00;
+  }
+
+  Serial.println("Raw Signal Value (0-1023):");
+  Serial.println(voMeasured);
+
+  Serial.println("Voltage:");
+  Serial.println(calcVoltage);
+
+  Serial.println("Dust Density:");
+  Serial.println(dustDensity);
+
   delay(1000);
 }
